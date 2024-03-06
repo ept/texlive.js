@@ -10,7 +10,7 @@ To run the demo
 
 To run an example document (in the `input` directory) through pdflatex in your browser:
 
-1. Clone this repo, `git submodule init`, `git submodule update`
+1. Clone this repo
 2. Run a local webserver in the root of this repo, e.g. using `python3 -m http.server`
 3. Open http://localhost:8000/test.html in a web browser, open the JS console, and hit the "run" button. You should see the first page of a paper (we render the whole paper to PDF, it's only the PDF viewer that currently displays only one page).
 
