@@ -19,6 +19,7 @@ var TeXLive = function(opt_workerPath) {
       console.log(msg);
     }
     worker.onmessage = function(ev) {
+	  console.log('received:', ev.data)
       var data = JSON.parse(ev.data);
       var msg_id;
       if(!('command' in data))
@@ -49,6 +50,7 @@ var TeXLive = function(opt_workerPath) {
       var msg_id = promises.push(p)-1;
       onready.then(function() {
         cmd['msg_id'] = msg_id;
+		console.log('sent:', JSON.stringify(cmd))
         worker.postMessage(JSON.stringify(cmd));
       });
       return p;
@@ -99,12 +101,13 @@ var TeXLive = function(opt_workerPath) {
     var commands;
     if(self.initialized)
       commands = [
-        curry(self, 'FS_unlink', ['/input.tex']),
-        curry(self, 'FS_createDataFile', ['/', 'input.tex', source_code, true, true])
+        //curry(self, 'FS_unlink', ['/input.tex']),
+        //curry(self, 'FS_createDataFile', ['/', 'input.tex', source_code, true, true])
       ];
     else
       commands = [
-        curry(self, 'FS_createDataFile', ['/', 'input.tex', source_code, true, true]),
+        //curry(self, 'FS_createDataFile', ['/', 'input.tex', source_code, true, true]),
+        curry(self, 'FS_createLazyFilesFromList', ['/', 'input.lst', './input', true, true]),
         curry(self, 'FS_createLazyFilesFromList', ['/', 'texlive.lst', './texlive', true, true]),
       ];
 
@@ -148,11 +151,12 @@ var TeXLive = function(opt_workerPath) {
     if(self.initialized)
       commands = [
         curry(self, 'FS_unlink', ['/input.aux']),
-        curry(self, 'FS_createDataFile', ['/', 'input.aux', aux, true, true])
+        curry(self, 'FS_createDataFile', ['/', 'input.aux', source_code, true, true])
       ];
     else
       commands = [
-        curry(self, 'FS_createDataFile', ['/', 'input.aux', aux, true, true]),
+        curry(self, 'FS_createDataFile', ['/', 'input.aux', source_code, true, true]),
+        curry(self, 'FS_createLazyFilesFromList', ['/', 'input.lst', './input', true, true]),
         curry(self, 'FS_createLazyFilesFromList', ['/', 'texlive.lst', './texlive', true, true]),
       ];
     var sendCompile = function() {

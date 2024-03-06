@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<p id="content"><button id="run-button">Run</button></p>
+<canvas id="canvas">
+<script src="promisejs/promise.js"></script>
+<script src="pdftex.js"></script>
+<script src="pdfjs/build/pdf.js"></script>
+<script>
+let pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/build/pdf.worker.js'
+
+// TODO: might be easier to use https://github.com/wojtekmaj/react-pdf
+// see also https://github.com/automerge/pushpin/blob/master/src/renderer/components/content-types/files/PdfContent.tsx
+function renderPdf(pdfData) {
+	//document.getElementById('content').innerText = btoa(pdfData)
+	pdfjsLib.getDocument({data: pdfData}).promise.then(pdf => {
+		console.log('PDF loaded')
+		pdf.getPage(2).then(page => {
+			let viewport = page.getViewport({scale: 1.5})
+			let canvas = document.getElementById('canvas')
+			canvas.height = viewport.height;
+			canvas.width = viewport.width;
+			page.render({canvasContext: canvas.getContext('2d'), viewport}).promise.then(() => {
+				console.log('Page rendered')
+			})
+		})
+	})
+}
+
+document.getElementById('run-button').addEventListener('click', () => {
+	let texlive = new TeXLive(), {pdftex, bibtex} = texlive
+	//pdftex.on_stdout = (m) => console.log(m)
+	//pdftex.on_stderr = (m) => console.log(m)
+	pdftex.compileRaw().then(pdfData => {
+		pdftex.FS_readFile('/input.aux').then(auxData => {
+			console.log(auxData)
+			/*bibtex.compileRaw(auxData).then(bblData => {
+				pdftex.FS_createDataFile('/', 'input.bbl', bblData, true, true)
+				pdftex.compileRaw().then(pdfData2 => {
+					renderPdf(pdfData2)
+				})
+			})*/
+			
+			texlive.terminate()
+			renderPdf(pdfData)
+		})
+    })
+})
+</script>
